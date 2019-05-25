@@ -3,11 +3,13 @@ import java.awt.Color;
 public class Sphere extends SolidObject{
 	private Vec3 loc;
 	private float radius;
-	private Vec3 origCol = new Vec3 (25, 55, 71);
+	private Vec3 origCol;
+	//sick color:  = new Vec3 (25, 55, 71);
 	//private Color origCol = new Color (255, 99, 71);
-	public Sphere (Vec3 loc, float radius) {
+	public Sphere (Vec3 loc, float radius, Vec3 col) {
 		this.loc = loc;
 		this.radius = radius;
+		origCol=col;
 	}
 	
 	public Sphere () {
@@ -17,8 +19,7 @@ public class Sphere extends SolidObject{
 	}
 	
 	public Intersection findIntersection(Ray r) {
-		//GOAL 1: find parameter t and thus POI
-		//GOAL 2: store info including color/intensity
+		//find parameter t and thus POI
 	
 		float t =0;
 		//under the assumption that direction vector is normalized
@@ -33,7 +34,8 @@ public class Sphere extends SolidObject{
 		float d = (float) (Math.pow(b, 2) - 4*a*c);
 		//Case 1: d<0 so there are no solutions
 		if(d<0) {
-			return new Intersection (-1, -1, -1, new Vec3(0, 0, 0), 1);
+			//technically irrelevant given structure in Main for findClosestIntersection method
+			return new Intersection (new Vec3(-1, -1, -1), Color.BLACK.getRGB());
 		}
 		
 		//Case 2: d = 0, so there is 1 solution
@@ -47,27 +49,38 @@ public class Sphere extends SolidObject{
 			t = (float)Math.min(quadraticFormula1(a, b, c, d), quadraticFormula2(a, b, c, d));
 			//System.out.println("t = " + t);
 		}
-		
-		//GOAL 1 ACHIEVED:
 		Vec3 POI = r.findPoint(t);
-		System.out.println(POI);
-		//use normal to determine float value for intensity
-		//(p-q)/|p-q|
-		Vec3 surfaceNormal = POI.minus(this.loc).normalized();
-		
-		// ray direction is already normalized
-		//how directly is the ray hitting the surface?
-		float intensity = Math.abs(surfaceNormal.dot(r.getDirection()));
-		
-		//System.out.println(r.getDirection() + " and " + surfaceNormal);
-		//System.out.println(intensity);
-		//color must  be same color as sphere
-		Vec3 colIntersect = origCol;
-		
-		//1- intensity random mod
-		return new Intersection(POI, colIntersect, 1-intensity);
-	}
+
+		//determine color at POI
+		LightSource l = new LightSource( new Vec3 (100, 800, -200));
+		Vec3 lightHit = POI.minus(l.getLocation()).normalized();
 	
+		int col = calculateLighting(POI, l);
+		//col must be of type int
+		return new Intersection (POI, col);
+	}
+	public int calculateLighting(Vec3 POI, LightSource l) {
+		//Blinn-Phong model
+		//not really sure what to choose
+		Vec3 ambientColor = new Vec3(0.1f, 0.1f, 0.0f);
+		float ambientIntensity = 0.5f;
+		
+		Vec3 diffuseColor = origCol.normalized();
+		Vec3 surfaceNormal = POI.minus(this.loc).normalized();
+		Vec3 lightHit = l.getLocation().minus(POI).normalized();
+		float diffuseIntensity = Math.max(lightHit.dot(surfaceNormal), 0);
+		
+		Vec3 specularColor = new Vec3(1.0f, 1.0f, 1.0f);
+		//not sure if I should use camera or light source location for half angle
+		Vec3 halfAngle = (Main.c.getLocation().minus(POI).plus(l.getLocation().minus(POI))).normalized();
+		//Vec3 halfAngle = l.getLocation().minus(POI).plus(lightHit).normalized();
+		System.out.println(halfAngle.dot(surfaceNormal));
+		float specularIntensity = (float) Math.pow(Math.max(0,  halfAngle.dot(surfaceNormal)), 25);
+		
+		//System.out.println(specularIntensity);
+		Vec3 finalCol = ambientColor.scaledBy(255).plus(diffuseColor.scaledBy(diffuseIntensity*255)).plus(specularColor.scaledBy(255*specularIntensity));
+		return finalCol.convertToColor().getRGB();
+	}
 	private float quadraticFormula1(float a, float b, float c, float d) {
 		//+ instead of -
 		return (-b + (float)Math.sqrt((double)d))/(2*a);
