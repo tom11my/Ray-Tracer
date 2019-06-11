@@ -47,8 +47,15 @@ import java.awt.Color;
 			return this.scaledBy(1f/mag());
 		}
 		
+		public Vec3 toNegative() {
+			return new Vec3(-x, -y, -z);
+		}
 		public Color convertToColor(float intensity){
+			//could be reason for weird outline - 1f
 			return new Color(Math.max(0,Math.min(x/255,1f)),Math.max(0,Math.min(y/255,1f)),Math.max(0,Math.min(z/255,1f)), Math.max(0, intensity));
+		}
+		public Color convertToColor() {
+			return new Color(Math.max(0,Math.min(x/255,1f)),Math.max(0,Math.min(y/255,1f)),Math.max(0,Math.min(z/255,1f)));
 		}
 		public String toString() {
 			return "V -- x - " + x + "; y - " + y + "; z " + z;
