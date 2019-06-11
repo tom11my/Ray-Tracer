@@ -3,6 +3,18 @@ import java.awt.Color;
 
 	public class Vec3 {
 		public final float x, y, z;
+		public float getX() {
+			return x;
+		}
+
+		public float getY() {
+			return y;
+		}
+
+		public float getZ() {
+			return z;
+		}
+
 		public Vec3 (float x, float y, float z) {
 			this.x=x;
 			this.y=y;
