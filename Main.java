@@ -2,16 +2,17 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 public class Main {
-
+	public static Camera c = new Camera();
 	public static void main(String[] args) {
-		Camera c = new Camera();
+		System.out.println();
+		
 		Scene s = new Scene();
+		LightSource l = new LightSource( new Vec3 (0, 800, -100));
 		final int width = 600;
 		//represented on y-axis
 		final int height = 600;
 		//represented on x-axis
 		final int z = 300+ (int) c.getLocation().z;
-		System.out.println(z);
 		//how far flat screen is from camera(directly)
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		//run through individual pixels of image
@@ -24,11 +25,12 @@ public class Main {
 				//System.out.println(r);
 				//find intersections, specifically closest intersection
 				//AND: determine color given intersections and lighting
-				Intersection POI = findClosestIntersection(r, s);
+				Intersection POI = findClosestIntersection(r, s, l);
 				//System.out.println(POI);
 				//System.out.println(POI.getColor().convertToColor(POI.getIntensity()).getRGB());
 				//System.out.println(POI.getColor().convertToColor(POI.getIntensity()).getRGB());
-				img.setRGB(i,  j,  POI.getColor().convertToColor(POI.getIntensity()).getRGB());
+				//img.setRGB(i,  j,  POI.getColor().convertToColor(POI.getIntensity()).getRGB());
+				img.setRGB(i,  j,  POI.getFinalCol());
 				//somehow scale by intensity in line above
 				
 			}
@@ -39,15 +41,15 @@ public class Main {
 	public Ray constructRay(Camera c, Vec3 point) {
 		return new Ray (c.getLocation(), point);
 	}
-	public static Intersection findClosestIntersection(Ray r, Scene s) {
+	public static Intersection findClosestIntersection(Ray r, Scene s, LightSource l) {
 		//test for intersection in each object in scene
 		Vec3 color = new Vec3(0, 0, 0);
-		Intersection closest = new Intersection(0,0,0, color, 1);
+		Intersection closest = new Intersection(new Vec3(0, 0, 0), Color.black.getRGB());
 		for(SolidObject obj: s.getSolidObjects()) {
-			Intersection tempClose = obj.findIntersection(r);
+			Intersection tempClose = obj.findIntersection(r, l);
 			//works because they are on same ray line
 			//feels a bit arbitrary though
-			if(tempClose.x>closest.x) {
+			if(tempClose.getX()>closest.getX()) {
 				closest=tempClose;
 			}
 		}
