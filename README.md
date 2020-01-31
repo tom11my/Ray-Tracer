@@ -13,7 +13,3 @@ I applied the same technique to derive the other 3D shapes.
 Future Steps:
 1. Getting the rays to bounce off multiple objects
 2. Implementing Refraction
-
-Fun Image Glitch:
-
-![Glitch](Capture.PNG)
